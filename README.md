@@ -56,13 +56,7 @@ High-level domain statements that could sit in background anywhere.
 
 Sentence-level classification loses abstract-level intent (surrounding sentences often disambiguate).
 
-##Actionable improvements (if extending the project)
 
-Add context windows (previous/next sentence) or model the entire abstract.
-
-Use domain-specific encoders (e.g., PubMedBERT) to better separate subtle rhetorical functions.
-
-Calibrate predictions using confidence thresholds and review low-confidence cases.
 
 ## Limitations & Future Work
 - Sentence-level classification lacks abstract-level context
