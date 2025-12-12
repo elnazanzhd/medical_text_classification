@@ -1,142 +1,148 @@
 # Medical Text Classification with Transformers
 
-This project explores **transformer-based sentence classification for biomedical research abstracts**, specifically predicting the structural role of each sentence (Background, Objective, Methods, Results, Conclusion). Accurate identification of these components supports large-scale literature review, automated evidence extraction, and clinical research summarization.
+This project investigates **sentence-level rhetorical role classification** in biomedical research abstracts using modern transformer models. Automatically identifying whether a sentence represents *background, objective, methods, results,* or *conclusion* is essential for large-scale literature review, evidence synthesis, and downstream biomedical NLP tasks such as automated systematic review support.
+
+The model fine-tunes **DistilBERT** on the **PubMed 20k RCT** dataset and includes full training, evaluation, and detailed error analysis.
+
+---
 
 ##  Dataset
-We use the **PubMed 20k RCT** dataset, which contains 20,000 randomized controlled trial abstracts annotated at the sentence level.  
-Each sentence is labeled with one of five rhetorical roles.  
-The task is challenging because adjacent sections often exhibit **high semantic overlap**, making fine-grained classification difficult.
+
+We use the **PubMed 20k RCT** dataset, a widely used benchmark containing:
+
+- 20,000 randomized controlled trial abstracts  
+- Sentence-level annotations with five rhetorical labels  
+  - **BACKGROUND**  
+  - **OBJECTIVE**  
+  - **METHODS**  
+  - **RESULTS**  
+  - **CONCLUSIONS**
+
+This dataset is challenging due to high semantic overlap between adjacent sections—for example between *background ↔ objective* or *methods ↔ results*—making it a good testbed for fine-grained biomedical NLP.
 
 Dataset link: https://huggingface.co/datasets/pietrolesci/pubmed-20k-rct
 
+---
+
 ##  Model
-The system fine-tunes **DistilBERT (distilbert-base-uncased)** for sentence-level classification.
 
-- 5 output classes  
+We fine-tune **DistilBERT (distilbert-base-uncased)** for 5-way sentence classification.
+
+Key characteristics:
+
+- Lightweight transformer model suitable for limited hardware  
 - Cross-entropy objective  
-- Lightweight transformer baseline suitable for biomedical NLP tasks
+- Trained on individual sentences without surrounding context  
+- Output layer: 5-class linear classifier  
 
-##  Training Setup
+Future work explores domain-specific encoders such as **PubMedBERT** or **BioClinicalBERT** for improved boundary detection.
+
+---
+
+## Training Setup
+
 - **Max sequence length:** 128  
 - **Optimizer:** AdamW  
 - **Epochs:** 3  
-- **Metrics:** Accuracy, Macro F1  
-- **Hardware:** Training performed on a subset due to GPU limitations
+- **Metrics:** Accuracy, Macro-F1  
+- **Hardware:** Consumer GPU / trained on a subset due to resource limits  
+- **Environment:** See `requirements.txt` for dependencies
+
+---
 
 ##  Results
 
-| Epoch | Train Loss | Val Loss | Accuracy | Macro F1 |
-|------|------------|----------|----------|-----------|
-| 1 | 0.392 | 0.389 | 0.863 | 0.802 |
-| 2 | 0.306 | 0.405 | 0.867 | 0.806 |
-| 3 | 0.225 | 0.442 | 0.865 | 0.803 |
+Performance on the validation split:
 
-The model reaches **~86% accuracy** and **~0.80 macro-F1**, consistent with expectations for compact transformer models on this benchmark.
+| Epoch | Train Loss | Val Loss | Accuracy | Macro F1 |
+|-------|------------|----------|----------|----------|
+| 1     | 0.392      | 0.389    | 0.863    | 0.802    |
+| 2     | 0.306      | 0.405    | 0.867    | 0.806    |
+| 3     | 0.225      | 0.442    | 0.865    | 0.803    |
+
+These values are consistent with expectations for compact transformer models on this benchmark.  
+Macro-F1 is particularly relevant due to class imbalance (e.g., fewer “objective” sentences).
+
+---
 
 ##  Error Analysis
-The most common failure mode was:
 
-### **Objective → Background misclassification**
+The most frequent failure mode was **OBJECTIVE → BACKGROUND** misclassification.  
+This is a known difficulty in biomedical discourse segmentation because objective sentences often lack explicit intent markers.
 
-Many sentences describing study aims do not include explicit objective markers (e.g., “we aimed to…”, “the purpose of this study…”). When phrased as general statements, they resemble background context.
-
-Representative misclassified examples (true: objective, predicted: background):
-
-## 🔍 Error Analysis
-
-The dominant failure mode was:
-
-### **Objective → Background misclassification**
-
-This reflects a common boundary ambiguity in biomedical writing: many objective sentences lack explicit goal markers (“we aimed…”, “the purpose of this study…”), and without neighboring sentences, they resemble background context.
-
-Below are **five representative misclassified examples** (true: objective, predicted: background), exactly as produced during analysis:
+Below are **five representative misclassified samples** (true label: objective, predicted: background):
 
 ---
 
-**Example 1:**  
-“Opioid antagonists (e.g., naltrexone) and positive modulators of GABAA receptors (e.g., alprazolam) modestly attenuate the abuse-related effects of stimulants like amphetamine.”  
-**Why it fooled the model:** Reads like general domain knowledge; no explicit study aim signal.
+### **Example 1**
+> “Opioid antagonists (e.g., naltrexone) and positive modulators of GABAA receptors (e.g., alprazolam) modestly attenuate the abuse-related effects of stimulants like amphetamine.”
+
+**Why it fooled the model:**  
+Reads like general domain knowledge; lacks any explicit research aim markers.
 
 ---
 
-**Example 2:**  
-“In a randomised controlled open study, nurses from hospitals and primary healthcare were randomised to either e-learning or classroom teaching.”  
-**Why it fooled the model:** Sounds like study context/setup; aim is implicit, not stated.
+### **Example 2**
+> “In a randomised controlled open study, nurses from hospitals and primary healthcare were randomised to either e-learning or classroom teaching.”
+
+**Why it fooled the model:**  
+Sentence describes the study setup, but the goal is implicit, not stated.
 
 ---
 
-**Example 3:**  
-“Previous investigation showed that the volume-time curve technique could be an alternative for endotracheal tube (ETT) cuff management.”  
-**Why it fooled the model:** Looks like prior work summary, typical “background” phrasing.
+### **Example 3**
+> “Previous investigation showed that the volume-time curve technique could be an alternative for endotracheal tube (ETT) cuff management.”
 
-## 🔍 Error Analysis
-
-The dominant failure mode was:
-
-### **Objective → Background misclassification**
-
-This reflects a common boundary ambiguity in biomedical writing: many objective sentences lack explicit goal markers (“we aimed…”, “the purpose of this study…”), and without neighboring sentences, they resemble background context.
-
-Below are **five representative misclassified examples** (true: objective, predicted: background), exactly as produced during analysis:
+**Why it fooled the model:**  
+Classic prior-work sentence typically found in the background section.
 
 ---
 
-**Example 1:**  
-“Opioid antagonists (e.g., naltrexone) and positive modulators of GABAA receptors (e.g., alprazolam) modestly attenuate the abuse-related effects of stimulants like amphetamine.”  
-**Why it fooled the model:** Reads like general domain knowledge; no explicit study aim signal.
+### **Example 4**
+> “The subjects who received the volume-time curve technique for ETT cuff management presented a significantly lower incidence and severity of sore throat and cough…”
+
+**Why it fooled the model:**  
+Outcome-heavy phrasing resembles results rather than an objective.
 
 ---
 
-**Example 2:**  
-“In a randomised controlled open study, nurses from hospitals and primary healthcare were randomised to either e-learning or classroom teaching.”  
-**Why it fooled the model:** Sounds like study context/setup; aim is implicit, not stated.
+### **Example 5**
+> “Patients ranged in age from @ years to @ years (mean @ years) and all completed @ year follow-up.”
+
+**Why it fooled the model:**  
+Demographic / contextual details often appear in background or methods sections.
 
 ---
 
-**Example 3:**  
-“Previous investigation showed that the volume-time curve technique could be an alternative for endotracheal tube (ETT) cuff management.”  
-**Why it fooled the model:** Looks like prior work summary, typical “background” phrasing.
+### **Error Pattern Summary**
 
- ## 🔍 Error Analysis
+Misclassified objective sentences commonly:
 
-The dominant failure mode was:
+- Lack explicit intent cues (e.g., “we aimed to…”)  
+- Resemble high-level background statements  
+- Contain study context that blurs rhetorical boundaries  
+- Require surrounding-sentence context to interpret correctly  
 
-### **Objective → Background misclassification**
-
-This reflects a common boundary ambiguity in biomedical writing: many objective sentences lack explicit goal markers (“we aimed…”, “the purpose of this study…”), and without neighboring sentences, they resemble background context.
-
-Below are **five representative misclassified examples** (true: objective, predicted: background), exactly as produced during analysis:
+This highlights the limitation of **single-sentence classification** for tasks that depend on discourse structure.
 
 ---
 
-**Example 1:**  
-“Opioid antagonists (e.g., naltrexone) and positive modulators of GABAA receptors (e.g., alprazolam) modestly attenuate the abuse-related effects of stimulants like amphetamine.”  
-**Why it fooled the model:** Reads like general domain knowledge; no explicit study aim signal.
+##  Limitations & Future Work
+
+- **Loss of context:** Classifying individual sentences ignores abstract-level structure.  
+- **Boundary ambiguity:** Many objectives are context-dependent.  
+- **Model choice:** Larger or domain-specific models (PubMedBERT, BioClinicalBERT) may reduce errors.  
+- **Potential extensions:**  
+  - Hierarchical or multi-sentence context models  
+  - Sentence-order modeling (e.g., transformers with positional discourse features)  
+  - Using abstract-level sequence models (e.g., Longformer, Hierarchical BERT)
 
 ---
-
-**Example 2:**  
-“In a randomised controlled open study, nurses from hospitals and primary healthcare were randomised to either e-learning or classroom teaching.”  
-**Why it fooled the model:** Sounds like study context/setup; aim is implicit, not stated.
-
----
-
-**Example 3:**  
-“Previous investigation showed that the volume-time curve technique could be an alternative for endotracheal tube (ETT) cuff management.”  
-**Why it fooled the model:** Looks like prior work summary, typical “background” phrasing.
-
-**Pattern:**  
-Sentence-level models struggle whenever **intent depends on surrounding context**, not only local phrasing.
-
-This highlights the need for models that incorporate **sentence ordering** or **multi-sentence windows**.
-
-## Limitations & Future Work
-- Sentence-only classification loses abstract-level structure  
-- Future work: hierarchical document models or sliding windows of multiple sentences  
-- Using domain-specific encoders (e.g., PubMedBERT, BioClinicalBERT) may reduce boundary ambiguity  
-- Evaluating across full abstracts may better reflect downstream usefulness
 
 ## Reproducibility
-All experiments can be reproduced by installing the dependencies in `requirements.txt` and running the notebook top-to-bottom.  
-The notebook includes training, evaluation, and error extraction for transparency.
+
+To reproduce the results:
+
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
