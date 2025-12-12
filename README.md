@@ -23,7 +23,7 @@ The system fine-tunes **DistilBERT (distilbert-base-uncased)** for sentence-leve
 - **Metrics:** Accuracy, Macro F1  
 - **Hardware:** Training performed on a subset due to GPU limitations
 
-## Results
+##  Results
 
 | Epoch | Train Loss | Val Loss | Accuracy | Macro F1 |
 |------|------------|----------|----------|-----------|
@@ -52,12 +52,12 @@ Sentence-level models struggle whenever **intent depends on surrounding context*
 
 This highlights the need for models that incorporate **sentence ordering** or **multi-sentence windows**.
 
-##  Limitations & Future Work
+## Limitations & Future Work
 - Sentence-only classification loses abstract-level structure  
 - Future work: hierarchical document models or sliding windows of multiple sentences  
 - Using domain-specific encoders (e.g., PubMedBERT, BioClinicalBERT) may reduce boundary ambiguity  
 - Evaluating across full abstracts may better reflect downstream usefulness
 
-##  Reproducibility
+## Reproducibility
 All experiments can be reproduced by installing the dependencies in `requirements.txt` and running the notebook top-to-bottom.  
 The notebook includes training, evaluation, and error extraction for transparency.
