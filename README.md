@@ -42,10 +42,33 @@ Many sentences describing study aims do not include explicit objective markers (
 
 Representative misclassified examples (true: objective, predicted: background):
 
-- Prior work summaries without clear intent markers  
-- Context/setup descriptions that blur the boundary with background  
-- Demographic or study-setting details  
-- Outcome-heavy sentences lacking explicit study goals  
+ ## 🔍 Error Analysis
+
+The dominant failure mode was:
+
+### **Objective → Background misclassification**
+
+This reflects a common boundary ambiguity in biomedical writing: many objective sentences lack explicit goal markers (“we aimed…”, “the purpose of this study…”), and without neighboring sentences, they resemble background context.
+
+Below are **five representative misclassified examples** (true: objective, predicted: background), exactly as produced during analysis:
+
+---
+
+**Example 1:**  
+“Opioid antagonists (e.g., naltrexone) and positive modulators of GABAA receptors (e.g., alprazolam) modestly attenuate the abuse-related effects of stimulants like amphetamine.”  
+**Why it fooled the model:** Reads like general domain knowledge; no explicit study aim signal.
+
+---
+
+**Example 2:**  
+“In a randomised controlled open study, nurses from hospitals and primary healthcare were randomised to either e-learning or classroom teaching.”  
+**Why it fooled the model:** Sounds like study context/setup; aim is implicit, not stated.
+
+---
+
+**Example 3:**  
+“Previous investigation showed that the volume-time curve technique could be an alternative for endotracheal tube (ETT) cuff management.”  
+**Why it fooled the model:** Looks like prior work summary, typical “background” phrasing.
 
 **Pattern:**  
 Sentence-level models struggle whenever **intent depends on surrounding context**, not only local phrasing.
