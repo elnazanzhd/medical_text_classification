@@ -5,6 +5,7 @@ This project fine-tunes a transformer-based model to classify sentences from bio
 
 ## Dataset
 We use the PubMed 20k RCT dataset, which contains sentence-level annotations from randomized controlled trial abstracts. The task is challenging due to semantic overlap between adjacent sections.
+
 link to dataset: https://huggingface.co/datasets/pietrolesci/pubmed-20k-rct
 
 ## Model
