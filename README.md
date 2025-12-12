@@ -1,5 +1,9 @@
 
 # Medical Text Classification with Transformers
+<p align="center">
+  <img src="assets/cover.png" alt="Medical Text Classification" width="650">
+</p>
+
 
 This project fine-tunes a transformer-based model to classify sentences from biomedical abstracts into structural sections: background, objective, methods, results, and conclusions.
 
