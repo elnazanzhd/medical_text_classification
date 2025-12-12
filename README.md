@@ -28,7 +28,7 @@ link to dataset: https://huggingface.co/datasets/pietrolesci/pubmed-20k-rct
 | 3 | 0.225 | 0.442 | 0.865 | 0.803 |
 
 ## Error Analysis
-he most frequent error type was objective → background. This is usually not a “dumb model” issue, it’s a label boundary ambiguity issue: many “objective” sentences are written like general context statements and do not contain explicit goal markers (e.g., “to evaluate…”, “we aimed…”). At sentence-level, without neighboring sentences, these often resemble background.
+The most frequent error type was objective → background. This is usually not a “dumb model” issue, it’s a label boundary ambiguity issue: many “objective” sentences are written like general context statements and do not contain explicit goal markers (e.g., “to evaluate…”, “we aimed…”). At sentence-level, without neighboring sentences, these often resemble background.
 
 Below are 10 representative misclassified examples (true: objective, predicted: background) from the validation errors:
 
