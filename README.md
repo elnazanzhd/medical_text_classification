@@ -56,7 +56,7 @@ High-level domain statements that could sit in background anywhere.
 
 Sentence-level classification loses abstract-level intent (surrounding sentences often disambiguate).
 
-Actionable improvements (if extending the project):
+##Actionable improvements (if extending the project)
 
 Add context windows (previous/next sentence) or model the entire abstract.
 
