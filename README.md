@@ -1,66 +1,63 @@
-
 # Medical Text Classification with Transformers
-This project fine-tunes a transformer-based model to classify sentences from biomedical abstracts into structural sections: background, objective, methods, results, and conclusions.
 
-## Dataset
-We use the PubMed 20k RCT dataset, which contains sentence-level annotations from randomized controlled trial abstracts. The task is challenging due to semantic overlap between adjacent sections.
+This project explores **transformer-based sentence classification for biomedical research abstracts**, specifically predicting the structural role of each sentence (Background, Objective, Methods, Results, Conclusion). Accurate identification of these components supports large-scale literature review, automated evidence extraction, and clinical research summarization.
 
-link to dataset: https://huggingface.co/datasets/pietrolesci/pubmed-20k-rct
+##  Dataset
+We use the **PubMed 20k RCT** dataset, which contains 20,000 randomized controlled trial abstracts annotated at the sentence level.  
+Each sentence is labeled with one of five rhetorical roles.  
+The task is challenging because adjacent sections often exhibit **high semantic overlap**, making fine-grained classification difficult.
 
-## Model
-- DistilBERT (distilbert-base-uncased)
-- Sentence-level classification
-- 5 output classes
+Dataset link: https://huggingface.co/datasets/pietrolesci/pubmed-20k-rct
 
-## Training Setup
-- Max sequence length: 128
-- Optimizer: AdamW
-- Epochs: 3
-- Metric: Accuracy and Macro F1
-- Training performed on a subset due to hardware constraints
+##  Model
+The system fine-tunes **DistilBERT (distilbert-base-uncased)** for sentence-level classification.
+
+- 5 output classes  
+- Cross-entropy objective  
+- Lightweight transformer baseline suitable for biomedical NLP tasks
+
+##  Training Setup
+- **Max sequence length:** 128  
+- **Optimizer:** AdamW  
+- **Epochs:** 3  
+- **Metrics:** Accuracy, Macro F1  
+- **Hardware:** Training performed on a subset due to GPU limitations
 
 ## Results
+
 | Epoch | Train Loss | Val Loss | Accuracy | Macro F1 |
-|------|-----------|----------|----------|----------|
+|------|------------|----------|----------|-----------|
 | 1 | 0.392 | 0.389 | 0.863 | 0.802 |
 | 2 | 0.306 | 0.405 | 0.867 | 0.806 |
 | 3 | 0.225 | 0.442 | 0.865 | 0.803 |
 
-## Error Analysis
-The most frequent error type was objective → background. It’s a label boundary ambiguity issue: many “objective” sentences are written like general context statements and do not contain explicit goal markers (e.g., “to evaluate…”, “we aimed…”). At sentence-level, without neighboring sentences, these often resemble background.
+The model reaches **~86% accuracy** and **~0.80 macro-F1**, consistent with expectations for compact transformer models on this benchmark.
 
-Below are 5 representative misclassified examples (true: objective, predicted: background) from the validation errors:
+##  Error Analysis
+The most common failure mode was:
 
-“Opioid antagonists (e.g., naltrexone) and positive modulators of GABAA receptors (e.g., alprazolam) modestly attenuate the abuse-related effects of stimulants like amphetamine.”
-Why it fooled the model: reads like general domain knowledge, no explicit study aim signal.
+### **Objective → Background misclassification**
 
-“In a randomised controlled open study, nurses from hospitals and primary healthcare were randomised to either e-learning or classroom teaching.”
-Why it fooled the model: sounds like study context/setup; aim is implicit, not stated.
+Many sentences describing study aims do not include explicit objective markers (e.g., “we aimed to…”, “the purpose of this study…”). When phrased as general statements, they resemble background context.
 
-“Previous investigation showed that the volume-time curve technique could be an alternative for endotracheal tube (ETT) cuff management.”
-Why it fooled the model: looks like prior work summary, typical “background” phrasing.
+Representative misclassified examples (true: objective, predicted: background):
 
-“The subjects who received the volume-time curve technique for ETT cuff management presented a significantly lower incidence and severity of sore throat and cough…”
-Why it fooled the model: outcome-heavy wording resembles results; lack of objective cue confuses boundary.
+- Prior work summaries without clear intent markers  
+- Context/setup descriptions that blur the boundary with background  
+- Demographic or study-setting details  
+- Outcome-heavy sentences lacking explicit study goals  
 
-“Patients ranged in age from @ years to @ years (mean @ years) and all completed @ year follow-up.”
-Why it fooled the model: demographic/setting detail reads like background or methods context.
+**Pattern:**  
+Sentence-level models struggle whenever **intent depends on surrounding context**, not only local phrasing.
 
+This highlights the need for models that incorporate **sentence ordering** or **multi-sentence windows**.
 
-Pattern summary (Objective → Background):
+##  Limitations & Future Work
+- Sentence-only classification loses abstract-level structure  
+- Future work: hierarchical document models or sliding windows of multiple sentences  
+- Using domain-specific encoders (e.g., PubMedBERT, BioClinicalBERT) may reduce boundary ambiguity  
+- Evaluating across full abstracts may better reflect downstream usefulness
 
-Objective sentence written as general context (no “we aimed / to investigate” markers).
-
-High-level domain statements that could sit in background anywhere.
-
-Sentence-level classification loses abstract-level intent (surrounding sentences often disambiguate).
-
-
-
-## Limitations & Future Work
-- Sentence-level classification lacks abstract-level context
-- Future work could incorporate sentence ordering or multi-sentence windows
-- Larger models or domain-specific encoders (e.g., PubMedBERT) may improve boundary cases
-
-## Reproducibility
-All experiments can be reproduced by running the notebook top-to-bottom after installing dependencies from `requirements.txt`.
+##  Reproducibility
+All experiments can be reproduced by installing the dependencies in `requirements.txt` and running the notebook top-to-bottom.  
+The notebook includes training, evaluation, and error extraction for transparency.
